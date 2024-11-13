@@ -24,6 +24,17 @@ export class EntriesController {
   ) {}
 
   @Public()
+  @Get('')
+  async searchEntries(
+    @Query('search') search: string,
+    @Query('limit') limit: number,
+    @Query('prev') prev: string,
+    @Query('after') after: string,
+  ): Promise<Object> {
+    return this.entriesService.search(search, limit, prev, after);
+  }
+
+  @Public()
   @Get(':word')
   async getEntry(@Param('word') word: string): Promise<Dictionary> {
     this.logger.log('Recuperando ' + word);
@@ -39,7 +50,7 @@ export class EntriesController {
       const newDictionary = new DictionaryUpdateDto();
       newDictionary.wordMetadata = metadata.data;
       newDictionary.word = word;
-      this.logger.log('saving ' + JSON.stringify(newDictionary));
+      this.logger.log('Updating ' + word);
       return this.entriesService.updateEntry(word, newDictionary);
     }
     this.logger.log('Cache hit');

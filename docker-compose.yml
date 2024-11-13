@@ -15,6 +15,8 @@ services:
       - ./pgdata:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    networks:
+      - postgres-network
 
   #  frontend:
   #    build:
@@ -50,6 +52,8 @@ services:
       - ./app:/app/src
     env_file:
       - backend/.env.development
+    networks:
+      - postgres-network
 
   pgadmin:
     image: dpage/pgadmin4
@@ -62,3 +66,9 @@ services:
       - "5050:80"
     depends_on:
       - db
+    networks:
+      - postgres-network
+
+networks:
+  postgres-network:
+    driver: bridge

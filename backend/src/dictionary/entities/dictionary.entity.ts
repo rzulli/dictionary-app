@@ -1,4 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn, PrimaryColumn } from 'typeorm';
+import { User } from 'src/user/entities/user.entity';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  PrimaryColumn,
+  ManyToMany,
+} from 'typeorm';
 
 @Entity('dictionary')
 export class Dictionary {

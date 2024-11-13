@@ -1,10 +1,16 @@
 import {
   Controller,
+  Delete,
   Get,
+  HttpException,
+  HttpStatus,
   Logger,
   NotFoundException,
   Param,
+  Post,
   Query,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
 import { EntriesService } from './entries.service';
 import { Public } from 'src/auth/const/const';
@@ -13,6 +19,9 @@ import { HttpService } from '@nestjs/axios';
 import { AxiosResponse } from 'axios';
 import { Dictionary } from 'src/dictionary/entities/dictionary.entity';
 import { DictionaryUpdateDto } from 'src/dictionary/dto/dictionary-update.dto';
+import { AuthGuard } from 'src/auth/auth.guard';
+import { UserService } from 'src/user/user.service';
+import { FavoriteWordDto } from 'src/user/dto/favorite-word.dto';
 
 @Controller('entries/en')
 export class EntriesController {
@@ -20,6 +29,7 @@ export class EntriesController {
 
   constructor(
     private readonly entriesService: EntriesService,
+    private readonly userService: UserService,
     private readonly httpService: HttpService,
   ) {}
 
@@ -33,13 +43,23 @@ export class EntriesController {
   ): Promise<Object> {
     return this.entriesService.search(search, limit, prev, after);
   }
-
+  @UseGuards(AuthGuard)
+  @Get(':word')
+  async getEntryWithHistory(
+    @Param('word') word: string,
+    @Request() req,
+  ): Promise<Dictionary> {
+    this.logger.debug('/:word/ with Authorization. Saving history ' + +word);
+    let cache = this.getEntry(word);
+    this.userService.saveHistory(req.user.id, word);
+    return cache;
+  }
   @Public()
   @Get(':word')
   async getEntry(@Param('word') word: string): Promise<Dictionary> {
     this.logger.log('Recuperando ' + word);
     const cache = await this.entriesService.getEntry(word).catch((e) => {
-      throw new NotFoundException('Palavra não encontrada');
+      throw new HttpException('Palavra não encontrada', HttpStatus.NOT_FOUND);
     });
 
     if (!cache.wordMetadata) {
@@ -54,6 +74,29 @@ export class EntriesController {
       return this.entriesService.updateEntry(word, newDictionary);
     }
     this.logger.log('Cache hit');
-    return cache;
+    return new Promise((resolve) => resolve(cache));
+  }
+
+  @UseGuards(AuthGuard)
+  @Post(':word/favorite')
+  async favoriteWord(@Param('word') word: string, @Request() req) {
+    let favoriteDto = new FavoriteWordDto();
+    favoriteDto.word = word;
+    favoriteDto.userId = req.user.id;
+    if (await this.userService.favoriteWord(favoriteDto)) {
+      return HttpStatus.OK;
+    }
+    return HttpStatus.NOT_FOUND;
+  }
+  @UseGuards(AuthGuard)
+  @Delete(':word/unfavorite')
+  async unfavoriteWord(@Param('word') word: string, @Request() req) {
+    let favoriteDto = new FavoriteWordDto();
+    favoriteDto.word = word;
+    favoriteDto.userId = req.user.id;
+    if (await this.userService.unfavoriteWord(favoriteDto)) {
+      return HttpStatus.OK;
+    }
+    return HttpStatus.NOT_FOUND;
   }
 }

@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DictionaryUpdateDto } from 'src/dictionary/dto/dictionary-update.dto';
 import { Dictionary } from 'src/dictionary/entities/dictionary.entity';
+import { User } from 'src/user/entities/user.entity';
 import { getConnection, Repository } from 'typeorm';
 import { buildPaginator } from 'typeorm-cursor-pagination';
 

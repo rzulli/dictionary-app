@@ -14,6 +14,10 @@ import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { User } from './entities/user.entity';
+import { UserProfileDto } from './dto/user-profile.dto';
+import { UserHistory } from './entities/userHistory.entity';
+import { Dictionary } from 'src/dictionary/entities/dictionary.entity';
 
 @Controller('user')
 export class UserController {
@@ -22,21 +26,36 @@ export class UserController {
 
   @Get('me')
   @UseGuards(AuthGuard)
-  getProfile() {
-    return this.userService.findAll();
+  async getProfile(@Request() req): Promise<UserProfileDto> {
+    const user = await this.userService.findByIdIncludeRelations(req.user.id, [
+      'favorites',
+    ]);
+    let profile = new UserProfileDto();
+    profile.email = user.email;
+    profile.name = user.name;
+    profile.favorites = user.favorites;
+    return profile;
   }
 
   @UseGuards(AuthGuard)
   @Get('me/history')
-  getHistory(@Request() req) {
-    this.logger.log('Get History');
-    return 'Get History';
+  async getHistory(@Request() req): Promise<UserHistory[]> {
+    this.logger.log('me/history - ' + req.user.id);
+    const user = await this.userService.findByIdIncludeRelations(req.user.id, [
+      'history',
+    ]);
+    this.logger.debug(JSON.stringify(user));
+    return user.history;
   }
 
   @UseGuards(AuthGuard)
   @Get('me/favorites')
-  getFavorites(@Request() req) {
-    this.logger.log('Get favorites');
-    return 'Get favorites';
+  async getFavorites(@Request() req): Promise<Dictionary[]> {
+    this.logger.log('me/favorites - ' + req.user.id);
+    const user = await this.userService.findByIdIncludeRelations(req.user.id, [
+      'favorites',
+    ]);
+    this.logger.debug(JSON.stringify(user));
+    return user.favorites;
   }
 }

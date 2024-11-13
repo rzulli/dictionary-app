@@ -1,4 +1,13 @@
-import { Entity, Column, PrimaryGeneratedColumn, PrimaryColumn } from 'typeorm';
+import { Dictionary } from 'src/dictionary/entities/dictionary.entity';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  PrimaryColumn,
+  ManyToMany,
+  JoinTable,
+} from 'typeorm';
+import { UserHistory } from './userHistory.entity';
 
 @Entity()
 export class User {
@@ -13,4 +22,12 @@ export class User {
 
   @Column()
   password: string;
+
+  @ManyToMany(() => Dictionary)
+  @JoinTable()
+  favorites: Dictionary[];
+
+  @ManyToMany(() => UserHistory)
+  @JoinTable()
+  history: UserHistory[];
 }

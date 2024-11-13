@@ -1,0 +1,64 @@
+version: "3.5"
+
+services:
+  db:
+    build:
+      context: .
+      dockerfile: dockerfile.db
+    restart: always
+    environment:
+      - POSTGRES_DB=dictionary
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    container_name: postgres
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  #  frontend:
+  #    build:
+  #      context: .
+  #      dockerfile: Dockerfile
+  #    container_name: dictonaryapi-frontend
+  #    environment:
+  #      - PORT=${PORT}
+  #    ports:
+  #      - "8000:3000"
+  #    depends_on:
+  #     - db
+  #  volumes:
+  #     - ./src:/app/src
+
+  backend:
+    build:
+      context: backend/
+      dockerfile: dockerfile
+    container_name: dictonaryapi-backend
+    environment:
+      PORT: 3000
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: dictionary
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    volumes:
+      - ./app:/app/src
+    env_file:
+      - backend/.env.development
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    container_name: nest-pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=pgadmin4
+    ports:
+      - "5050:80"
+    depends_on:
+      - db

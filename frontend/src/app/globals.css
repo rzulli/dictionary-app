@@ -70,3 +70,36 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes slide-in {
+  0% {
+    background: red;
+    width: 1rem;
+    right: 4rem;
+    top: 50%;
+    transform: translate(50%, -50%);
+    border: 1vw solid red;
+  }
+  100% {
+    width: 300%;
+    right: 4rem;
+    top: 50%;
+    transform: translate(50%, -50%);
+    border: 3vw solid red;
+  }
+}
+
+.rippleBackgroundContainer {
+  position: relative;
+  overflow: hidden;
+}
+.rippleBackgroundContainer:before {
+  content: "";
+  box-sizing: border-box;
+  aspect-ratio: 1;
+  border-radius: 100%;
+
+  position: absolute;
+  animation: slide-in 2s;
+  z-index: 1;
+}

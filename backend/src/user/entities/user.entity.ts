@@ -6,6 +6,8 @@ import {
   PrimaryColumn,
   ManyToMany,
   JoinTable,
+  ManyToOne,
+  OneToMany,
 } from 'typeorm';
 import { UserHistory } from './userHistory.entity';
 
@@ -23,11 +25,10 @@ export class User {
   @Column()
   password: string;
 
-  @ManyToMany(() => Dictionary)
+  @ManyToMany(() => Dictionary, (dict) => dict.word)
   @JoinTable()
   favorites: Dictionary[];
 
-  @ManyToMany(() => UserHistory)
-  @JoinTable()
+  @OneToMany(() => UserHistory, (history) => history.user)
   history: UserHistory[];
 }

@@ -92,6 +92,7 @@ export class EntriesController {
     }
     return HttpStatus.NOT_FOUND;
   }
+
   @UseGuards(AuthGuard)
   @Delete(':word/unfavorite')
   async unfavoriteWord(@Param('word') word: string, @Request() req) {

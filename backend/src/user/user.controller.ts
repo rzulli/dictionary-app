@@ -39,13 +39,11 @@ export class UserController {
 
   @UseGuards(AuthGuard)
   @Get('me/history')
-  async getHistory(@Request() req): Promise<UserHistory[]> {
+  async getHistory(@Request() req) {
     this.logger.log('me/history - ' + req.user.id);
-    const user = await this.userService.findByIdIncludeRelations(req.user.id, [
-      'history',
-    ]);
-    this.logger.debug(JSON.stringify(user));
-    return user.history;
+    const history = await this.userService.getHistory(req.user.id);
+    this.logger.debug(JSON.stringify(history));
+    return history;
   }
 
   @UseGuards(AuthGuard)

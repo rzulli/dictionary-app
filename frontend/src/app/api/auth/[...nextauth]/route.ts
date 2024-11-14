@@ -1,6 +1,8 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { NextAuthOptions } from "next-auth";
+import { useContext } from "react";
+import { UserContext } from "@/hooks/useProfile";
 
 export const authOptions = {
   // Configure one or more authentication providers
@@ -18,22 +20,21 @@ export const authOptions = {
           email: credentials.email,
           password: credentials.password,
         };
-
-        const res = await fetch(process.env.BACKEND_API_URL + "/auth/signin", {
-          method: "POST",
+        const res = await fetch(process.env.BACKEND_API_URL + "/auth/signin/", {
+          method: "post",
           body: JSON.stringify(data),
           headers: {
+            Accept: "application/json",
             "Content-Type": "application/json",
           },
         });
-
         const resData = await res.json();
         console.log(res.ok, resData);
         if (res.ok && resData) {
           return resData;
         } else {
           console.error("Authorization failed:", resData);
-          throw new Error(resData.message);
+          return false;
         }
       },
     }),
@@ -51,6 +52,7 @@ export const authOptions = {
       return session;
     },
   },
+  secret: process.env.JWT_SECRET_KEY,
 };
 export const handler = NextAuth(authOptions);
 

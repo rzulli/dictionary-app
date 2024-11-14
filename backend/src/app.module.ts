@@ -17,7 +17,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 console.log(process.env.DATABASE_HOST, process.env.DATABASE_PORT);
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DATABASE_HOST,

@@ -1,6 +1,14 @@
 "use client";
 import { SearchContext } from "@/hooks/search/useSearch";
-import { Expand, Heart, MoreHorizontal, Slash } from "lucide-react";
+import {
+  Expand,
+  Heart,
+  HeartCrack,
+  HeartHandshake,
+  HeartOff,
+  MoreHorizontal,
+  Slash,
+} from "lucide-react";
 import {
   Pagination,
   PaginationContent,
@@ -11,24 +19,202 @@ import {
   PaginationPrevious,
 } from "../ui/pagination";
 import { useRouter, useSearchParams } from "next/navigation";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "../ui/drawer";
+import { Button } from "../ui/button";
+import { useSession } from "next-auth/react";
+import LoginForm from "./loginForm";
+import Login from "@/app/login/page";
+import React, { useContext, useEffect, useState } from "react";
+import { UserContext } from "@/hooks/useProfile";
 
-function WordSearchCard(props) {
+function DefinitionDrawerButton({ word }) {
+  const { data: session } = useSession();
+
+  useEffect(() => {
+    const fetchDefinition = async () => {
+      const res = await fetch(
+        process.env.NEXT_PUBLIC_BACKEND_API_URL + "/entries/en/" + word,
+        {
+          headers: {
+            Authorization: "Bearer " + session?.user.token,
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    };
+    fetchDefinition();
+  }, []);
   return (
-    <div className="w-full p-4 border rounded-md flex ">
-      <span className="flex-1 text-xl">{props.word}</span>
-      <Heart />
-      <Expand />
+    <>
+      <Drawer>
+        <DrawerTrigger>
+          <Expand className="hover:text-slate-300" />
+        </DrawerTrigger>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle>Are you absolutely sure?</DrawerTitle>
+            <DrawerDescription>This action cannot be undone.</DrawerDescription>
+          </DrawerHeader>
+          <DrawerFooter>
+            <Button>Submit</Button>
+            <DrawerClose>
+              <Button variant="outline">Cancel</Button>
+            </DrawerClose>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+    </>
+  );
+}
+
+function LoginDrawerForm() {
+  return (
+    <>
+      <DrawerTitle>Login </DrawerTitle>
+
+      <Login />
+    </>
+  );
+}
+interface LoginDrawerProps {
+  trigger: React.ReactNode;
+}
+export function LoginDrawer({ trigger }: LoginDrawerProps) {
+  return (
+    <Drawer>
+      <DrawerTrigger className="flex">{trigger}</DrawerTrigger>
+      <DrawerContent>
+        <LoginDrawerForm redirectUrl={"/profile"} />
+        <DrawerFooter />
+      </DrawerContent>
+    </Drawer>
+  );
+}
+interface AuthorizedDrawerWithTriggerProps {
+  children: React.ReactNode;
+  trigger: React.ReactNode;
+  triggerCallback: () => void;
+}
+function AuthorizedDrawerWithTrigger({
+  children,
+  trigger,
+  triggerCallback,
+}: AuthorizedDrawerWithTriggerProps) {
+  console.log(children, triggerCallback, trigger);
+  return (
+    <Drawer>
+      <DrawerTrigger
+        onClick={(e) => {
+          e.preventDefault();
+          triggerCallback();
+        }}
+      >
+        {trigger}
+      </DrawerTrigger>
+      <DrawerContent>
+        {children}
+
+        <DrawerFooter />
+      </DrawerContent>
+    </Drawer>
+  );
+}
+
+function FavoriteToggle({ setEffect, word }) {
+  const [profile, setProfile, profileActions] = useContext(UserContext);
+
+  const hasFavorited = profileActions.hasFavorited(word);
+  return (
+    <>
+      {!hasFavorited && (
+        <Heart
+          onClick={() => {
+            setEffect(true);
+          }}
+          onAnimationEnd={() => setEffect(false)}
+          className="hover:text-slate-300"
+        />
+      )}
+      {hasFavorited && (
+        <HeartOff
+          onClick={() => {
+            setEffect(true);
+          }}
+          onAnimationEnd={() => setEffect(false)}
+          className="hover:text-slate-300"
+        />
+      )}
+    </>
+  );
+}
+function FavoriteButtonTrigger({ setEffect, word }) {
+  const { data: session } = useSession();
+
+  return (
+    <>{session?.user && <FavoriteToggle word={word} setEffect={setEffect} />}</>
+  );
+}
+function FavoriteButton({ word, setEffect }) {
+  const { data: session } = useSession();
+
+  const [profile, setProfile, profileActions] = useContext(UserContext);
+
+  return (
+    <>
+      <AuthorizedDrawerWithTrigger
+        trigger={<FavoriteButtonTrigger word={word} setEffect={setEffect} />}
+        triggerCallback={
+          profileActions.hasFavorited(word)
+            ? () => profileActions.unfavoriteWord(word, () => alert("aaa"))
+            : () => profileActions.favoriteWord(word, () => alert("aaa"))
+        }
+      >
+        {session?.user && (
+          <>
+            <DrawerTitle>Favorite palavra {session?.user?.name} </DrawerTitle>
+            <DrawerDescription>This action cannot be undone.</DrawerDescription>
+          </>
+        )}
+        {!session?.user && <LoginDrawerForm />}
+      </AuthorizedDrawerWithTrigger>
+    </>
+  );
+}
+export function WordCard({ word, cls }) {
+  const [effect, setEffect] = useState(false);
+
+  return (
+    <div
+      className={
+        `${
+          effect && "rippleBackgroundContainer"
+        } "w-full p-6 border rounded-md flex gap-4 ` + cls
+      }
+    >
+      <span className="flex-1 text-xl">{word}</span>
+      <FavoriteButton word={word} setEffect={setEffect} />
+      <DefinitionDrawerButton />
     </div>
   );
 }
 
-function SearchWordPaginator(props) {
+function SearchWordPaginator({ search }) {
   const searchParams = useSearchParams();
   console.log(searchParams.get("search"));
   return (
     <Pagination>
       <PaginationContent>
-        {props.search.hasPrev && (
+        {search.hasPrev && (
           <PaginationItem>
             <PaginationPrevious
               href={{
@@ -36,7 +222,7 @@ function SearchWordPaginator(props) {
                 query: {
                   search: searchParams.get("search"),
                   limit: Number(searchParams.get("limit")),
-                  prev: props.search.previous,
+                  prev: search.previous,
                   after: "",
                   page: Math.max(Number(searchParams.get("page")) - 1, 1),
                 },
@@ -47,13 +233,11 @@ function SearchWordPaginator(props) {
         <PaginationItem className="flex">
           <span>
             Página {searchParams.get("page")} de{" "}
-            {props.search.results.length > 0 &&
-              Math.ceil(
-                props.search.totalDocs / Number(searchParams.get("limit"))
-              )}
+            {search.results.length > 0 &&
+              Math.ceil(search.totalDocs / Number(searchParams.get("limit")))}
           </span>
         </PaginationItem>
-        {props.search.hasNext && (
+        {search.hasNext && (
           <PaginationItem>
             <PaginationNext
               href={{
@@ -62,7 +246,7 @@ function SearchWordPaginator(props) {
                   search: searchParams.get("search"),
                   limit: Number(searchParams.get("limit")),
                   prev: "",
-                  after: props.search.next,
+                  after: search.next,
                   page: Number(searchParams.get("page")) + 1,
                 },
               }}
@@ -82,9 +266,11 @@ export default function SearchWordList(props: PopularWordsProps) {
           {state.search?.results?.length > 0 && (
             <>
               <SearchWordPaginator search={state.search} />
-              {Object.entries(state.search.results).map(([k, value]) => (
-                <WordSearchCard key={k} word={value.word} />
-              ))}
+              <div className=" flex flex-col gap-4">
+                {Object.entries(state.search.results).map(([k, value]) => (
+                  <WordCard key={k} word={value.word} />
+                ))}
+              </div>
               <SearchWordPaginator search={state.search} />
             </>
           )}

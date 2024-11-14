@@ -3,43 +3,28 @@ import LoginForm from "@/components/local/loginForm";
 import Image from "next/image";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { signIn, signOut, useSession } from "next-auth/react";
+import { redirect, useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { useContext } from "react";
+import { UserContext } from "@/hooks/useProfile";
 
-const formSchema = z
-  .object({
-    email: z.string().email("Email inválido"),
-    password: z.string().min(4).max(15),
-    confirmPassword: z.string().min(4).max(15),
-  })
-  .superRefine(({ confirmPassword, password }, ctx) => {
-    if (confirmPassword !== password) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Senha e confirmação não são iguais",
-        path: ["confirmPassword"],
-      });
-    }
-  });
-function Errors(props: { errors?: string[] }) {
-  if (!props.errors?.length) return null;
-  return (
-    <div>
-      {props.errors.map((err) => (
-        <p>{err}</p>
-      ))}
-    </div>
-  );
+const formSchema = z.object({
+  email: z.string().email("Email inválido"),
+  password: z.string().min(4).max(15),
+});
+
+interface LoginProps {
+  redirectUrl?: string;
 }
-export default function Login() {
+export default function Login({ redirectUrl }: LoginProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
       password: "",
-      confirmPassword: "",
     },
   });
   const {
@@ -51,33 +36,51 @@ export default function Login() {
   } = form;
 
   const router = useRouter();
+  const { data: session } = useSession();
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      await signIn("credentials", {
+      const res = await signIn("credentials", {
         redirect: false,
         email: values.email,
         password: values.password,
-      }).then(({ ok, error }) => {
-        console.log(ok, error);
-        if (ok) {
-          router.push("/profile");
-        } else {
-          setError("root", {
-            type: "400",
-            message: error,
-          });
-        }
       });
+      if (res.ok) {
+        if (redirectUrl) {
+          router.push(redirectUrl);
+        }
+      } else {
+        setError("root", { message: "Credenciais inválidas" });
+      }
     } catch (error) {
       console.error("Login error:", error);
       setError("root", { message: "Erro interno" });
     }
-  }
+  };
   return (
     <>
-      <Errors errors={errors.root} />
-      <LoginForm handleSubmit={handleSubmit(onSubmit)} form={form} />
+      {session?.user && (
+        <div className="text-lg text-center">
+          Você já está logado.
+          <div className="flex gap-5 items-center justify-center mt-5">
+            <Button
+              onClick={() => signOut({ callbackUrl: "/" })}
+              variant="destructive"
+            >
+              Log out
+            </Button>{" "}
+            <Button onClick={() => redirect("/profile")} variant="secondary">
+              Profile
+            </Button>
+          </div>
+        </div>
+      )}
+      {!session && (
+        <LoginForm
+          onSubmit={handleSubmit(onSubmit, () => alert("aaaa"))}
+          form={form}
+        />
+      )}
     </>
   );
 }

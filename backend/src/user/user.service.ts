@@ -41,13 +41,15 @@ export class UserService {
           resolve(response);
         })
         .catch((error) => {
-          this.logger.log(JSON.stringify(error));
           //23505 - code para quando unique check for quebrado
           //TODO - melhorar handling de erro. hardcode
           if (error.code == 23505) {
+            this.logger.debug('E-mail duplicado');
             reject(new HttpException('E-mail duplicado.', 400));
+          } else {
+            this.logger.debug(JSON.stringify(error));
           }
-          reject(error);
+          reject(new HttpException(error.message, 400));
         });
     });
   }
@@ -80,6 +82,7 @@ export class UserService {
 
     return false;
   }
+
   async favoriteWord(favoriteWordDto: FavoriteWordDto): Promise<boolean> {
     if (favoriteWordDto.userId == undefined) {
       throw new NotFoundException('Usuário não encontrado');
@@ -145,20 +148,33 @@ export class UserService {
     await this.userRepository.delete(id);
   }
 
-  async saveHistory(id: number, word: string) {
-    this.logger.log('Saving history' + id + ' - ' + word);
+  async getHistory(id: number) {
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.history', 'history')
+      .where('user.id = :id', { id: id })
+      .getOne();
+
+    this.logger.log(JSON.stringify(user));
+    return user.history;
+  }
+
+  async saveHistory(id: number, query: string) {
+    this.logger.log('Saving history' + id + ' - ' + query);
     let user = await this.userRepository.findOne({
       where: { id },
       relations: ['history'],
     });
-
+    let word = await this.entryRepository.findOne({
+      where: { word: query },
+    });
     if (!user || !id) {
       throw new HttpException('Usuário não encontrado', HttpStatus.NOT_FOUND);
     }
     let userHistory = new UserHistory();
     userHistory.user = user;
-    userHistory.word = word;
-
+    userHistory.word = query;
+    this.logger.log(JSON.stringify(userHistory));
     const history = await this.userHistoryRepository.save(userHistory);
     user.history.push(history);
     await this.userRepository.save(user);

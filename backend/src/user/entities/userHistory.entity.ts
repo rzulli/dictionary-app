@@ -4,6 +4,7 @@ import {
   CreateDateColumn,
   Entity,
   ManyToMany,
+  ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
   Timestamp,
@@ -15,10 +16,10 @@ export class UserHistory {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToMany(() => User)
+  @ManyToOne(() => User, (user) => user.history)
   user: User;
 
-  @OneToOne(() => Dictionary, (word) => word.word)
+  @Column({ nullable: true })
   word: string;
 
   @CreateDateColumn({ nullable: true })

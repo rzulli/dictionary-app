@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -6,6 +7,7 @@ import {
   HttpException,
   HttpStatus,
   Logger,
+  NotFoundException,
   Post,
   Request,
   UseFilters,
@@ -17,10 +19,10 @@ import { AuthGuard } from './auth.guard';
 import { AuthDto } from './dto/auth.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserService } from 'src/user/user.service';
-import { HttpErrorFilter } from 'src/http-error-filter/http-error.filter';
+import { HttpExceptionFilter } from 'src/http-error-filter/http-error.filter';
+import { error } from 'console';
 
 @Controller('auth')
-@UseFilters(new HttpErrorFilter())
 export class AuthController {
   private readonly logger = new Logger(AuthController.name);
   constructor(
@@ -32,7 +34,15 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('signin')
   async signIn(@Body() auth: AuthDto) {
-    return await this.authService.signIn(auth.email);
+    const user = await this.authService.signIn(auth.email, auth.password);
+
+    let profile = await this.userService.findByIdIncludeRelations(user.id, [
+      'favorites',
+      'history',
+    ]);
+    delete profile.password;
+
+    return { ...profile, ...user };
   }
 
   @Public()
@@ -41,7 +51,6 @@ export class AuthController {
   async signUp(@Body() userForm: CreateUserDto) {
     this.logger.log('Creating user ' + JSON.stringify(userForm));
 
-    await this.userService.create(userForm);
-    return await this.authService.signIn(userForm.email);
+    return await this.userService.create(userForm);
   }
 }

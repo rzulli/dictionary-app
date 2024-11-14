@@ -9,19 +9,30 @@ import {
 } from "../ui/form";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { FormEvent } from "react";
 
-interface LoginFormProps {
-  handleSubmit: () => void;
-  form: any;
-}
-export default function LoginForm({ onSubmit, form }: LoginFormProps) {
+export default function RegisterForm({ handleSubmit, form }) {
   return (
     <Form {...form}>
-      <form method="post" onSubmit={onSubmit} className="space-y-8">
+      <form onSubmit={handleSubmit} method="post" className="space-y-8">
         {form.formState.errors.root && (
-          <p>{form.formState.errors.root.message}</p>
+          <p className="p-3 bg-red-500 text-red-50">
+            {form.formState.errors.root.message}
+          </p>
         )}
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Name</FormLabel>
+              <FormControl>
+                <Input placeholder="" {...field} />
+              </FormControl>
+              <FormDescription></FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="email"
@@ -50,7 +61,20 @@ export default function LoginForm({ onSubmit, form }: LoginFormProps) {
             </FormItem>
           )}
         />
-
+        <FormField
+          control={form.control}
+          name="confirmPassword"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Confirme sua senha</FormLabel>
+              <FormControl>
+                <Input placeholder="" {...field} type="password" />
+              </FormControl>
+              <FormDescription></FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <Button type="submit">Submit</Button>
       </form>
     </Form>

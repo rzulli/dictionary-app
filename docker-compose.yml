@@ -18,19 +18,25 @@ services:
     networks:
       - postgres-network
 
-  #  frontend:
-  #    build:
-  #      context: .
-  #      dockerfile: Dockerfile
-  #    container_name: dictonaryapi-frontend
-  #    environment:
-  #      - PORT=${PORT}
-  #    ports:
-  #      - "8000:3000"
-  #    depends_on:
-  #     - db
-  #  volumes:
-  #     - ./src:/app/src
+  frontend:
+    build:
+      context: frontend/
+      dockerfile: dockerfile
+    container_name: dictonaryapi-frontend
+    environment:
+      PORT: 8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - backend
+    env_file:
+      - frontend/.env.development
+    volumes:
+      - .:/frontend
+      - /frontend/node_modules
+    networks:
+      - postgres-network
 
   backend:
     build:

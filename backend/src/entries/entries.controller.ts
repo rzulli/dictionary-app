@@ -40,8 +40,12 @@ export class EntriesController {
     @Query('limit') limit: number,
     @Query('prev') prev: string,
     @Query('after') after: string,
+    @Query('page') page: number,
   ): Promise<Object> {
-    return this.entriesService.search(search, limit, prev, after);
+    this.logger.debug(
+      search + ' ' + limit + ' ' + prev + ' ' + after + ' ' + page,
+    );
+    return this.entriesService.search(search, limit, prev, after, page);
   }
   @UseGuards(AuthGuard)
   @Get(':word')

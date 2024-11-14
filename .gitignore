@@ -36,3 +36,5 @@ lerna-debug.log*
 
 #local-development-data
 /pgdata
+/app
+/node_modules

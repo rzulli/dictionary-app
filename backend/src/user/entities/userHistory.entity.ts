@@ -14,6 +14,7 @@ import { User } from './user.entity';
 export class UserHistory {
   @PrimaryGeneratedColumn()
   id: number;
+
   @ManyToMany(() => User)
   user: User;
 

@@ -12,9 +12,12 @@ import { AuthModule } from './auth/auth.module';
 import { User } from './user/entities/user.entity';
 import { UserController } from './user/user.controller';
 import { EntriesModule } from './entries/entries.module';
-console.log(+process.env.DATABASE_PORT);
+import { ConfigModule, ConfigService } from '@nestjs/config';
+
+console.log(process.env.DATABASE_HOST, process.env.DATABASE_PORT);
 @Module({
   imports: [
+    ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DATABASE_HOST,
@@ -32,6 +35,6 @@ console.log(+process.env.DATABASE_PORT);
     EntriesModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, ConfigService],
 })
 export class AppModule {}

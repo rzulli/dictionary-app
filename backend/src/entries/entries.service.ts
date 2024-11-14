@@ -17,9 +17,10 @@ export class EntriesService {
 
   async search(
     search = '',
-    limit = 10,
+    limit: number = 2,
     previous = null,
     after = null,
+    page = 0,
   ): Promise<Object> {
     this.logger.debug(
       'Searching ' +
@@ -39,24 +40,25 @@ export class EntriesService {
       entity: Dictionary,
       paginationKeys: ['word'],
       query: {
-        limit: limit,
         order: 'ASC',
+        limit: Number(limit),
         afterCursor: after,
         beforeCursor: previous,
       },
     });
 
-    // Pass queryBuilder as parameter to get paginate result.
     const { data, cursor } = await paginator.paginate(queryBuilder);
 
     const response = {
       results: data,
-      totalDocs: await queryBuilder.getCount(),
+      totalDocs: (await queryBuilder.getManyAndCount())[1],
       next: cursor.afterCursor,
       previous: cursor.beforeCursor,
       hasNext: cursor.afterCursor != null,
       hasPrev: cursor.beforeCursor != null,
+      limit: Number(limit),
     };
+    this.logger.debug(response);
     return response;
   }
 

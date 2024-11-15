@@ -42,7 +42,7 @@
 
 3. Acesse a aplicação:
 
-   Frontend: http://localhost:8000
+   Frontend: https://localhost:8000 ( ambiente npm run dev configurado com experimental-https. Use https:// )
 
    Backend: http://localhost:3000
 
@@ -65,3 +65,4 @@ Sinta-se à vontade para abrir issues ou pull requests para contribuir com o pro
 🐞 Known Issues
 
 - Ao expirar token jwt frontend não realiza logout automaticamente
+- Typescript Types precisam ser ajustados para npm run build bem sucedido

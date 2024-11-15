@@ -1,5 +1,5 @@
 "use client";
-import LoginForm from "@/components/local/loginForm";
+import LoginForm from "@/components/forms/loginForm";
 import Image from "next/image";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,7 +9,7 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import { redirect, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useContext } from "react";
-import { UserContext } from "@/hooks/useProfile";
+import { ProfileContext } from "@/context/profile/ProfileContext";
 
 const formSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -76,10 +76,14 @@ export default function Login({ redirectUrl }: LoginProps) {
         </div>
       )}
       {!session && (
-        <LoginForm
-          onSubmit={handleSubmit(onSubmit, () => alert("aaaa"))}
-          form={form}
-        />
+        <>
+          <div className="text-3xl my-4 text-center">Login</div>
+
+          <LoginForm
+            onSubmit={handleSubmit(onSubmit, () => alert("aaaa"))}
+            form={form}
+          />
+        </>
       )}
     </>
   );

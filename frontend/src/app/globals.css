@@ -73,22 +73,35 @@ body {
 
 @keyframes slide-in {
   0% {
-    background: red;
     width: 1rem;
     right: 4rem;
     top: 50%;
     transform: translate(50%, -50%);
-    border: 1vw solid red;
+    z-index: -10;
+    @apply border-slate-200 border-0;
+    @apply bg-slate-100;
   }
   100% {
     width: 300%;
     right: 4rem;
     top: 50%;
     transform: translate(50%, -50%);
-    border: 3vw solid red;
+
+    @apply border-slate-300 border-[30vw];
+    @apply bg-slate-200;
   }
 }
-
+@layer utilities {
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+}
 .rippleBackgroundContainer {
   position: relative;
   overflow: hidden;
@@ -100,6 +113,10 @@ body {
   border-radius: 100%;
 
   position: absolute;
-  animation: slide-in 2s;
+  animation: slide-in 0.5s;
   z-index: 1;
+}
+.clearAnimation:before,
+.clearAnimation {
+  animation: none;
 }

@@ -1,5 +1,5 @@
 "use client";
-import LoginForm from "@/components/local/loginForm";
+import LoginForm from "@/components/forms/loginForm";
 import Image from "next/image";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { signIn } from "next-auth/react";
 import { redirect, useRouter } from "next/navigation";
-import RegisterForm from "@/components/local/registerForm";
+import RegisterForm from "@/components/forms/registerForm";
 
 const formSchema = z
   .object({
@@ -84,7 +84,7 @@ export default function Register({ redirectUrl }: RegisterProps) {
   }
   return (
     <>
-      <span className="text-xl">Register</span>
+      <div className="text-3xl text-slate-800 my-4 text-center">Register</div>
 
       <RegisterForm handleSubmit={handleSubmit(onSubmit)} form={form} />
     </>

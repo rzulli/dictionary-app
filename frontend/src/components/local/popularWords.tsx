@@ -1,5 +1,6 @@
-import { SearchContext } from "@/hooks/search/useSearch";
+import { SearchContext } from "@/context/search/SearchContext";
 
+// TODO: Implement popular words frontend
 interface PopularWordsProps {}
 export default function PopularWords(props: PopularWordsProps) {
   return (

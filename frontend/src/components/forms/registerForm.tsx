@@ -13,7 +13,7 @@ import { Button } from "../ui/button";
 export default function RegisterForm({ handleSubmit, form }) {
   return (
     <Form {...form}>
-      <form onSubmit={handleSubmit} method="post" className="space-y-8">
+      <form onSubmit={handleSubmit} method="post" className="space-y-4">
         {form.formState.errors.root && (
           <p className="p-3 bg-red-500 text-red-50">
             {form.formState.errors.root.message}

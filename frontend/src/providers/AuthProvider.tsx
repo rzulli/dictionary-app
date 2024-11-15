@@ -1,5 +1,5 @@
 "use client";
-import { UserContext } from "@/hooks/useProfile";
+import { ProfileContext } from "@/context/profile/ProfileContext";
 import { SessionProvider, useSession } from "next-auth/react";
 import React, { ReactNode, useEffect, useState } from "react";
 

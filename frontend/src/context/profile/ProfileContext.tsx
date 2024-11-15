@@ -10,4 +10,4 @@ const defaultValue = [
   },
   () => {},
 ];
-export const UserContext = React.createContext(defaultValue);
+export const ProfileContext = React.createContext(defaultValue);

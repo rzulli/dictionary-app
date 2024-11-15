@@ -18,8 +18,9 @@ import {
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Login from "@/app/login/page";
-import { LoginDrawer } from "./searchWordsList";
+
 import { useRouter } from "next/navigation";
+import LoginDrawer from "./LoginDrawer";
 
 export default function Navbar() {
   const { data: session } = useSession();
@@ -27,17 +28,20 @@ export default function Navbar() {
 
   return (
     <div className="w-full p-4 flex justify-between">
-      <span className="text-2xl flex gap-2 p-4 items-center justify-center">
+      <a
+        href="/"
+        className="text-2xl flex gap-2 p-4 items-center justify-center"
+      >
         {" "}
         <BookMarked className="text-slate-700" />
         Dictionary
-      </span>
+      </a>
       <div className="p-4 flex ">
         <DropdownMenu>
           {session?.user && (
             <DropdownMenuTrigger className="rounded-xl hover:bg-slate-100 p-3">
               <span className="flex gap-2">
-                Olá, {session.user.name} <ChevronDown />
+                Hello, {session.user.name} <ChevronDown />
               </span>
             </DropdownMenuTrigger>
           )}
@@ -52,7 +56,12 @@ export default function Navbar() {
               <DropdownMenuItem onClick={() => router.push("/profile")}>
                 <User /> Profile
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })}>
+              <DropdownMenuItem
+                onClick={() => {
+                  signOut({ callbackUrl: "/" });
+                  router.push("/");
+                }}
+              >
                 <LogOut />
                 Log out
               </DropdownMenuItem>

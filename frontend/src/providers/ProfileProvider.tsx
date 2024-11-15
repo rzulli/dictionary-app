@@ -1,5 +1,5 @@
 "use client";
-import { UserContext } from "@/hooks/useProfile";
+import { ProfileContext } from "@/context/profile/ProfileContext";
 import { SessionProvider, useSession } from "next-auth/react";
 import React, { ReactNode, useEffect, useState } from "react";
 
@@ -31,9 +31,13 @@ function ProfileProvider({ children }: Props) {
           }
         );
         let user = await res.json();
-        user.favorites = user.favorites.map((obj) =>
-          obj.word ? obj.word : obj
-        );
+        console.log(user.favorites);
+        if (user.favorites) {
+          user.favorites = user.favorites.map((obj) =>
+            obj.word ? obj.word : obj
+          );
+        }
+        console.log(user.history);
         setProfile(user);
       };
       fetchProfile();
@@ -102,7 +106,7 @@ function ProfileProvider({ children }: Props) {
   }
   function addHistory() {}
   function hasFavorited(word) {
-    return profile.favorites.includes(word);
+    return profile.favorites ? profile.favorites.includes(word) : false;
   }
   const profileActions = {
     favoriteWord,
@@ -111,9 +115,9 @@ function ProfileProvider({ children }: Props) {
     hasFavorited,
   };
   return (
-    <UserContext.Provider value={[profile, setProfile, profileActions]}>
+    <ProfileContext.Provider value={[profile, setProfile, profileActions]}>
       {children}
-    </UserContext.Provider>
+    </ProfileContext.Provider>
   );
 }
 

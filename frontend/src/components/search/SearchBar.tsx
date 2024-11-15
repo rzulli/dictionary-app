@@ -3,7 +3,7 @@ import { EllipsisVertical, Search } from "lucide-react";
 import { Input } from "../ui/input";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { useDebouncedCallback } from "use-debounce";
-import { SearchContext } from "@/hooks/search/useSearch";
+import { SearchContext } from "@/context/search/SearchContext";
 import { useContext, useEffect } from "react";
 import {
   DropdownMenu,
@@ -12,40 +12,8 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group";
+import SearchOptionDropdown from "./SearchOptionsDropdown";
 
-function SearchOptionDropdown() {
-  const searchParams = useSearchParams();
-  const params = new URLSearchParams(searchParams);
-  const { replace } = useRouter();
-  const pathname = usePathname();
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger>
-        {" "}
-        <EllipsisVertical />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        <DropdownMenuLabel>
-          View
-          <ToggleGroup
-            onValueChange={(value) => {
-              params.set("limit", value);
-              replace(`${pathname}?${params.toString()}`);
-            }}
-            defaultChecked={params.get("limit")}
-            variant="outline"
-            type="single"
-          >
-            <ToggleGroupItem value="5">5</ToggleGroupItem>
-            <ToggleGroupItem value="10">10</ToggleGroupItem>
-            <ToggleGroupItem value="20">20</ToggleGroupItem>
-          </ToggleGroup>
-        </DropdownMenuLabel>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
 interface SearchBarProps {}
 export default function SearchBar(props: SearchBarProps) {
   const { setState } = useContext(SearchContext);
@@ -65,6 +33,8 @@ export default function SearchBar(props: SearchBarProps) {
       const resData = await res.json();
       setState(() => resData);
       console.log(resData);
+    } else {
+      setState(() => {});
     }
   };
 
@@ -96,10 +66,10 @@ export default function SearchBar(props: SearchBarProps) {
     replace(`${pathname}?${params.toString()}`);
   }, 300);
   return (
-    <div className="w-[50%] flex gap-3">
-      <div className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm">
+    <div className="w-[60vw] flex gap-3">
+      <div className="flex h-9 w-full rounded-md border border-input bg-slate-100 px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm">
         <input
-          className="w-full"
+          className="w-full bg-slate-100"
           onChange={(e) => handleSearch(e)}
           defaultValue={searchParams.get("search")?.toString()}
         />

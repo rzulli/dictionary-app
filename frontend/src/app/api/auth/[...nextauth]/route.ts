@@ -2,7 +2,7 @@ import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { NextAuthOptions } from "next-auth";
 import { useContext } from "react";
-import { UserContext } from "@/hooks/useProfile";
+import { ProfileContext } from "@/context/profile/ProfileContext";
 
 export const authOptions = {
   // Configure one or more authentication providers

@@ -1,0 +1,218 @@
+openapi: 3.0.3
+info:
+  title: Dictonary API - OpenAPI 3.0
+  description: |-
+  contact:
+    email: rafael.zulli0@gmail.com
+  version: 1.0.0
+servers:
+  - url: localhost:3000
+paths:
+  /:
+    get:
+      summary: Retornar a mensagem "English Dictionary". 
+      operationId: getHome
+      responses:
+        '200':
+          description: Sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: English Dictionary
+  /auth/signup:
+    post:
+      summary: Cadastra Usuário
+      operationId: signUp
+      responses:
+        '200':
+          description: Sucesso no cadastro. Retorna sessão de usuário cadastrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSession'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: User 1
+                email:
+                  type: string
+                  example: example@email.com
+                password:
+                  type: string
+                  example: test
+  /auth/signin:
+    post:
+      summary: Loga usuário
+      operationId: signIn
+      responses:
+        '200':
+          description: Retorna sessão de usuário cadastrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSession'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: example@email.com
+                password:
+                  type: string
+                  example: test
+  /entries/en:
+    get:
+      summary: Retornar a lista de palavras do dicionário, com paginação e suporte a busca. O endpoint de paginação de uma busca hipotética deve retornar a seguinte estrutura
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          required: true
+          description: Chave de busca
+          example: fire
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+          required: false
+          description: limite por página
+      responses:
+        '200':
+          description: Retorna busca
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    example: 
+                      - "fire"
+                      - "firefly"
+                      - "fireplace"
+                      - "fireman"
+                  totalDocs:
+                    type: integer
+                    example: 20
+                  previous:
+                    type: string
+                    example: "eyIkb2lkIjoiNTgwZmQxNmjJkOGI5In0"
+                  next:
+                    type: string
+                    example: "eyIkb2lkIjoiNTgwZmQxNm1NjJkOGI4In0"
+                  hasNext:
+                    type: boolean
+                  hasPrev:
+                    type: boolean
+  /entries/en/{word}:
+    get:
+      summary: Retornar as informações da palavra especificada e registrar no histórico de acesso.
+      parameters:
+        - in: path
+          name: word
+          schema:
+            type: string
+          required: true
+          description: Chave de busca
+          example: fire
+      responses:
+        '200':
+          description: Sucesso
+  /entries/en/{word}/favorite:
+    post:
+      summary: Favorita a palavra
+      parameters:
+        - in: path
+          name: word
+          schema:
+            type: string
+          required: true
+          description: Chave de busca
+          example: fire
+      responses:
+        '204':
+          description: Sucesso
+  /entries/en/{word}/unfavorite:
+    delete:
+      summary: Remove favorito de palavra
+      parameters:
+        - in: path
+          name: word
+          schema:
+            type: string
+          required: true
+          description: Chave de busca
+          example: fire
+      responses:
+        '204':
+          description: Sucesso
+  /user/me:
+    get:
+      summary:  Retornar o perfil do usúario
+      responses:
+          '200':
+            description: Perfil do usuário retornado com sucesso.
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/UserProfile'
+  /user/me/history:
+    get:
+      summary: Retornar a lista de palavras visitadas
+      responses:
+        '200':
+          description: Sucesso
+  /user/me/favorites:
+    get:
+      summary: Retornar a lista de palavras marcadas como favoritas
+      responses:
+        '200':
+          description: Sucesso
+
+components:
+  schemas:
+    MessageRespone:
+      type: object
+      properties:
+        message:
+          type: string
+          example: English Dictionary
+      xml:
+        name: messageResponse
+    UserSession:
+      type: object
+      properties:
+        name:
+          type: string
+          example: User 1
+        token:
+          type: string
+          example: john@email.com
+        id:
+          type: string
+          example: f3a106sa65dv53ab2c1380acef
+      xml:
+        name: user
+    UserProfile:
+      type: object
+      properties:
+        name:
+          type: string
+          example: User 1
+        email:
+          type: string
+          example: user@email.com

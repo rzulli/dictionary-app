@@ -27,13 +27,12 @@ export class UserController {
   @Get('me')
   @UseGuards(AuthGuard)
   async getProfile(@Request() req): Promise<UserProfileDto> {
-    const user = await this.userService.findByIdIncludeRelations(req.user.id, [
-      'favorites',
-    ]);
+    const user = await this.userService.getProfile(req.user.id);
     let profile = new UserProfileDto();
     profile.email = user.email;
     profile.name = user.name;
     profile.favorites = user.favorites;
+    profile.history = user.history;
     return profile;
   }
 

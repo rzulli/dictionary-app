@@ -22,6 +22,7 @@ import { DictionaryUpdateDto } from 'src/dictionary/dto/dictionary-update.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { UserService } from 'src/user/user.service';
 import { FavoriteWordDto } from 'src/user/dto/favorite-word.dto';
+import { AuthCollectorGuard } from 'src/auth/authCollector.guard';
 
 @Controller('entries/en')
 export class EntriesController {
@@ -30,7 +31,6 @@ export class EntriesController {
   constructor(
     private readonly entriesService: EntriesService,
     private readonly userService: UserService,
-    private readonly httpService: HttpService,
   ) {}
 
   @Public()
@@ -42,43 +42,31 @@ export class EntriesController {
     @Query('after') after: string,
     @Query('page') page: number,
   ): Promise<Object> {
-    this.logger.debug(
-      search + ' ' + limit + ' ' + prev + ' ' + after + ' ' + page,
-    );
+    //this.logger.debug(
+    //  search + ' ' + limit + ' ' + prev + ' ' + after + ' ' + page,
+    //);
     return this.entriesService.search(search, limit, prev, after, page);
   }
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthCollectorGuard)
   @Get(':word')
   async getEntryWithHistory(
     @Param('word') word: string,
     @Request() req,
   ): Promise<Dictionary> {
-    this.logger.debug('/:word/ with Authorization. Saving history ' + +word);
-    let cache = this.getEntry(word);
-    this.userService.saveHistory(req.user.id, word);
-    return cache;
-  }
-  @Public()
-  @Get(':word')
-  async getEntry(@Param('word') word: string): Promise<Dictionary> {
-    this.logger.log('Recuperando ' + word);
-    const cache = await this.entriesService.getEntry(word).catch((e) => {
-      throw new HttpException('Palavra não encontrada', HttpStatus.NOT_FOUND);
-    });
+    let cache = await this.entriesService.getEntry(word);
 
-    if (!cache.wordMetadata) {
-      this.logger.log('Metadata não encontrado. Requisitando da API');
-      const metadata = await firstValueFrom(
-        this.httpService.get(process.env.DICTIONARY_API + word),
-      );
-      const newDictionary = new DictionaryUpdateDto();
-      newDictionary.wordMetadata = metadata.data;
-      newDictionary.word = word;
-      this.logger.log('Updating ' + word);
-      return this.entriesService.updateEntry(word, newDictionary);
+    if (!req.user) {
+      return cache;
     }
-    this.logger.log('Cache hit');
-    return new Promise((resolve) => resolve(cache));
+    this.logger.debug(
+      '/:word/ with Authorization. Saving history ' +
+        req.user.id +
+        ' - ' +
+        word,
+    );
+
+    await this.userService.saveHistory(req.user.id, word);
+    return cache;
   }
 
   @UseGuards(AuthGuard)

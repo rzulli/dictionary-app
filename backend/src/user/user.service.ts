@@ -148,6 +148,19 @@ export class UserService {
     await this.userRepository.delete(id);
   }
 
+  async getProfile(id: number) {
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .where('user.id = :id', { id: id })
+      .leftJoinAndSelect('user.history', 'history')
+      .leftJoin('user.favorites', 'favorite')
+      .select(['user'])
+      .addSelect(['favorite.word', 'history'])
+      .getOne();
+
+    this.logger.log(JSON.stringify(user));
+    return user;
+  }
   async getHistory(id: number) {
     const user = await this.userRepository
       .createQueryBuilder('user')
@@ -160,23 +173,33 @@ export class UserService {
   }
 
   async saveHistory(id: number, query: string) {
-    this.logger.log('Saving history' + id + ' - ' + query);
-    let user = await this.userRepository.findOne({
-      where: { id },
-      relations: ['history'],
-    });
-    let word = await this.entryRepository.findOne({
-      where: { word: query },
-    });
-    if (!user || !id) {
-      throw new HttpException('Usuário não encontrado', HttpStatus.NOT_FOUND);
+    if (!id) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
-    let userHistory = new UserHistory();
-    userHistory.user = user;
-    userHistory.word = query;
-    this.logger.log(JSON.stringify(userHistory));
-    const history = await this.userHistoryRepository.save(userHistory);
-    user.history.push(history);
-    await this.userRepository.save(user);
+    let userHistory = await this.userHistoryRepository
+      .createQueryBuilder('history')
+      .leftJoinAndSelect(User, 'user', 'user.id = history.userId')
+      .where('history.word = :wordQuery and user.id = :id', {
+        wordQuery: query,
+        id: id,
+      })
+      .getOne();
+
+    if (userHistory != null) {
+      this.logger.log('Updating history' + id + ' - ' + query);
+      this.logger.debug(JSON.stringify(userHistory));
+      userHistory.lastAccessed = new Date();
+      this.userHistoryRepository.save(userHistory);
+    } else {
+      let user = await this.findByIdIncludeRelations(id, ['history']);
+
+      let newUserHistory = new UserHistory();
+      newUserHistory.user = user;
+      newUserHistory.word = query;
+
+      const history = await this.userHistoryRepository.save(newUserHistory);
+      user.history.push(history);
+      await this.userRepository.save(user);
+    }
   }
 }

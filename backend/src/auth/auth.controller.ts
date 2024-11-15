@@ -36,10 +36,7 @@ export class AuthController {
   async signIn(@Body() auth: AuthDto) {
     const user = await this.authService.signIn(auth.email, auth.password);
 
-    let profile = await this.userService.findByIdIncludeRelations(user.id, [
-      'favorites',
-      'history',
-    ]);
+    let profile = await this.userService.findOneById(user.id);
     delete profile.password;
 
     return { ...profile, ...user };

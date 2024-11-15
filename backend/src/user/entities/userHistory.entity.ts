@@ -24,4 +24,7 @@ export class UserHistory {
 
   @CreateDateColumn({ nullable: true })
   added: Date;
+
+  @CreateDateColumn({ nullable: true })
+  lastAccessed: Date;
 }

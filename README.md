@@ -1,5 +1,7 @@
 # Dictionary App 📚
 
+![Alt text](docs/screen.png?raw=true "Title")
+
 **Dictionary App** foi desenvolido como caso de estudo de uma aplicação Full-Stack completa.
 
 ## 🎯 Funcionalidades

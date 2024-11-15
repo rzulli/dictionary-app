@@ -8,6 +8,7 @@ import { FavoriteWordList } from "./components/FavoriteWordList";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useRef } from "react";
 import { useDraggable } from "react-use-draggable-scroll-safe";
+import { useRouter } from "next/navigation";
 
 export default function Profile() {
   const { data: session } = useSession();
@@ -23,6 +24,13 @@ export default function Profile() {
   const { events: events2 } = useDraggable(ref2, {
     applyRubberBandEffect: true,
   });
+
+  const { redirect } = useRouter();
+  useEffect(() => {
+    if (!profile) {
+      redirect("/");
+    }
+  }, [profile]);
 
   return (
     <>
